@@ -1,0 +1,7 @@
+tweepy==4.14.0
+beautifulsoup4==4.12.3
+spacy==3.7.2
+neo4j==5.17.0
+flask==3.0.2
+pyvis==0.3.2
+python-whois==0.9.4
