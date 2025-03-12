@@ -12,7 +12,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_FILE = os.path.join(SCRIPT_DIR, "twitter_data.json")
 
 # Adjusted limits based on dashboard (100 posts/month instead of 1500)
-MONTHLY_POST_LIMIT = 10  # Total posts retrievable per month (as per dashboard)
+MONTHLY_POST_LIMIT = 2  # Total posts retrievable per month (as per dashboard)
 MAX_PER_REQUEST = 10      # Reduced to fetch fewer posts per call (was 100)
 REQUESTS_PER_WINDOW = 18 # Max requests per 15-min window (900 seconds)
 WINDOW_DURATION = 900     # 15 minutes in seconds
@@ -78,7 +78,7 @@ def update_usage(count, request_made=False):
         with open(usage_file, "w") as f:
             json.dump(usage, f)
     except Exception as e:
-        print(f"Error updating usage file: {e}")  
+        print(f"Error updating usage file: {e}")
 
 def fetch_tweets(query, max_results=MAX_PER_REQUEST):
     """Fetch tweets with retry on rate limit, using Retry-After header if available."""
@@ -87,7 +87,7 @@ def fetch_tweets(query, max_results=MAX_PER_REQUEST):
         print("Monthly post limit reached!")
         return None
     max_results = min(max_results, remaining_posts)
-    
+
     for attempt in range(3):  # Retry up to 3 times
         try:
             tweets = client.search_recent_tweets(

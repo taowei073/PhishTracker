@@ -6,7 +6,7 @@ from datetime import datetime
 nlp = spacy.load("en_core_web_sm")
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_FILES = [os.path.join(SCRIPT_DIR, f) for f in ["twitter_data.json", "whois_data.json", "pastebin_data.json"]]
+INPUT_FILES = [os.path.join(SCRIPT_DIR,"../data_collection", f) for f in ["twitter_data.json", "whois_data.json", "pastebin_data.json"]]
 OUTPUT_FILE = os.path.join(SCRIPT_DIR, "processed_data.json")
 
 PHISHING_KEYWORDS = [

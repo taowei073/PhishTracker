@@ -1,12 +1,14 @@
 from neo4j import GraphDatabase
 import json
+import os
 from datetime import datetime
 
 URI = "bolt://localhost:7687"
 USERNAME = "neo4j"
 PASSWORD = "test1234"  # Update this!
 DATABASE = "PhishTrackerDB"      # Target database
-INPUT_FILE = "processed_data.json"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+INPUT_FILE = os.path.join(SCRIPT_DIR,"../nlp", "processed_data_deduped.json")
 
 class Neo4jLoader:
     def __init__(self, uri, user, password):
@@ -30,18 +32,28 @@ class Neo4jLoader:
                 MERGE (t:Tweet {tweet_id: $tweet_id})
                 SET t.text = $text, t.created_at = $created_at, t.username = $username
             """, **data)
+
             for domain in data["entities"]["domains"]:
                 session.run("""
                     MERGE (d:Domain {name: $domain})
                     MERGE (t:Tweet {tweet_id: $tweet_id})-[:MENTIONS]->(d)
                 """, {"tweet_id": data["tweet_id"], "domain": domain})
                 print(f"Linked tweet {data['tweet_id']} to domain {domain}")
+
             for ip in data["entities"]["ips"]:
                 session.run("""
                     MERGE (i:IP {address: $ip})
                     MERGE (t:Tweet {tweet_id: $tweet_id})-[:MENTIONS]->(i)
                 """, {"tweet_id": data["tweet_id"], "ip": ip})
                 print(f"Linked tweet {data['tweet_id']} to IP {ip}")
+
+            # NEW: Link keywords
+            for kw in data["entities"].get("keywords", []):
+                session.run("""
+                    MERGE (k:Keyword {text: $kw})
+                    MERGE (t:Tweet {tweet_id: $tweet_id})-[:HAS_KEYWORD]->(k)
+                """, {"tweet_id": data["tweet_id"], "kw": kw})
+                print(f"Linked tweet {data['tweet_id']} to keyword {kw}")
 
     def load_whois(self, data):
         creation_date = data["creation_date"]
@@ -75,18 +87,38 @@ class Neo4jLoader:
                 MERGE (p:Paste {url: $url})
                 SET p.content_preview = $content_preview
             """, **data)
+
+            # Link any domains found in the 'entities' field
             for domain in data["entities"]["domains"]:
                 session.run("""
                     MERGE (d:Domain {name: $domain})
                     MERGE (p:Paste {url: $url})-[:CONTAINS]->(d)
                 """, {"url": data["url"], "domain": domain})
                 print(f"Linked paste {data['url']} to domain {domain}")
+
+            # Link any IPs found in the 'entities' field
             for ip in data["entities"]["ips"]:
                 session.run("""
                     MERGE (i:IP {address: $ip})
                     MERGE (p:Paste {url: $url})-[:HOSTED_ON]->(i)
                 """, {"url": data["url"], "ip": ip})
                 print(f"Linked paste {data['url']} to IP {ip}")
+
+            # NEW: Link any domains in the 'linked_domains' field
+            for linked_domain in data.get("linked_domains", []):
+                session.run("""
+                    MERGE (d2:Domain {name: $linked_domain})
+                    MERGE (p:Paste {url: $url})-[:LINKED_TO]->(d2)
+                """, {"url": data["url"], "linked_domain": linked_domain})
+                print(f"Linked paste {data['url']} to linked domain {linked_domain}")
+
+            # OPTIONAL: Link any keywords
+            for kw in data["entities"].get("keywords", []):
+                session.run("""
+                    MERGE (k:Keyword {text: $kw})
+                    MERGE (p:Paste {url: $url})-[:HAS_KEYWORD]->(k)
+                """, {"url": data["url"], "kw": kw})
+                print(f"Linked paste {data['url']} to keyword {kw}")
 
     def load_data(self):
         print(f"Starting Neo4j load at {datetime.now()} into database '{DATABASE}'")
