@@ -1,1 +1,7 @@
+# Force all text files to use LF (Unix line endings)
+* text eol=lf
+
+# Keep Windows scripts with CRLF (optional)
+*.bat text eol=crlf
+*.cmd text eol=crlf
 * text=auto

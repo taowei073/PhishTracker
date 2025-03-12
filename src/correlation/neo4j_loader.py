@@ -82,43 +82,65 @@ class Neo4jLoader:
 
     def load_pastebin(self, data):
         with self.driver.session(database=DATABASE) as session:
-            print(f"Loading paste: {data['url']}")
-            session.run("""
-                MERGE (p:Paste {url: $url})
-                SET p.content_preview = $content_preview
-            """, **data)
+            # Begin a transaction
+            tx = session.begin_transaction()
+            try:
+                print(f"Loading paste: {data['url']}")
 
-            # Link any domains found in the 'entities' field
-            for domain in data["entities"]["domains"]:
-                session.run("""
-                    MERGE (d:Domain {name: $domain})
-                    MERGE (p:Paste {url: $url})-[:CONTAINS]->(d)
-                """, {"url": data["url"], "domain": domain})
-                print(f"Linked paste {data['url']} to domain {domain}")
+                # Ensure the Paste node exists
+                tx.run("""
+                    MERGE (p:Paste {url: $url})
+                    SET p.content_preview = $content_preview
+                """, {"url": data["url"], "content_preview": data.get("content_preview", "")})
 
-            # Link any IPs found in the 'entities' field
-            for ip in data["entities"]["ips"]:
-                session.run("""
-                    MERGE (i:IP {address: $ip})
-                    MERGE (p:Paste {url: $url})-[:HOSTED_ON]->(i)
-                """, {"url": data["url"], "ip": ip})
-                print(f"Linked paste {data['url']} to IP {ip}")
+                # Use a set to track domains and avoid duplicates
+                all_domains = set()
 
-            # NEW: Link any domains in the 'linked_domains' field
-            for linked_domain in data.get("linked_domains", []):
-                session.run("""
-                    MERGE (d2:Domain {name: $linked_domain})
-                    MERGE (p:Paste {url: $url})-[:LINKED_TO]->(d2)
-                """, {"url": data["url"], "linked_domain": linked_domain})
-                print(f"Linked paste {data['url']} to linked domain {linked_domain}")
+                # Handle extracted domains (from paste content)
+                for domain in data["entities"].get("domains", []):
+                    normalized_domain = domain.lower().strip()
+                    all_domains.add(normalized_domain)
 
-            # OPTIONAL: Link any keywords
-            for kw in data["entities"].get("keywords", []):
-                session.run("""
-                    MERGE (k:Keyword {text: $kw})
-                    MERGE (p:Paste {url: $url})-[:HAS_KEYWORD]->(k)
-                """, {"url": data["url"], "kw": kw})
-                print(f"Linked paste {data['url']} to keyword {kw}")
+                    tx.run("""
+                        MERGE (d:Domain {name: $domain})
+                        MERGE (p:Paste {url: $url})-[:CONTAINS]->(d)
+                    """, {"url": data["url"], "domain": normalized_domain})
+                    print(f"Linked paste {data['url']} to extracted domain {normalized_domain}")
+
+                # Handle explicitly linked domains
+                for linked_domain in data.get("linked_domains", []):
+                    normalized_linked = linked_domain.lower().strip()
+
+                    # Prevent duplicate domain merging
+                    if normalized_linked not in all_domains:
+                        tx.run("""
+                            MERGE (d:Domain {name: $linked_domain})
+                            MERGE (p:Paste {url: $url})-[:LINKED_TO]->(d)
+                        """, {"url": data["url"], "linked_domain": normalized_linked})
+                        print(f"Linked paste {data['url']} to linked domain {normalized_linked}")
+
+                # Link Paste to extracted IPs
+                for ip in data["entities"].get("ips", []):
+                    tx.run("""
+                        MERGE (i:IP {address: $ip})
+                        MERGE (p:Paste {url: $url})-[:HOSTED_ON]->(i)
+                    """, {"url": data["url"], "ip": ip})
+                    print(f"Linked paste {data['url']} to IP {ip}")
+
+                # Link Paste to extracted Keywords
+                for kw in data["entities"].get("keywords", []):
+                    normalized_kw = kw.lower().strip()
+                    tx.run("""
+                        MERGE (k:Keyword {text: $kw})
+                        MERGE (p:Paste {url: $url})-[:HAS_KEYWORD]->(k)
+                    """, {"url": data["url"], "kw": normalized_kw})
+                    print(f"Linked paste {data['url']} to keyword {normalized_kw}")
+
+                # Commit the transaction
+                tx.commit()
+            except Exception as e:
+                tx.rollback()
+                print(f"Error in load_pastebin: {e}")
 
     def load_data(self):
         print(f"Starting Neo4j load at {datetime.now()} into database '{DATABASE}'")

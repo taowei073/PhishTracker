@@ -10,6 +10,7 @@
 </head>
 <body>
     <h1>PhishTracker Dashboard</h1>
+
     <h2>Domains</h2>
     <table>
         <tr>
@@ -25,30 +26,35 @@
         </tr>
         {% endfor %}
     </table>
-	<h2>Emails</h2>
-	<table>
-		<tr><th>Email</th></tr>
-		{% for email in emails %}
-		<tr><td>{{ email }}</td></tr>
-		{% endfor %}
-	</table>
-	<h2>IPs</h2>
-	<table>
-		<tr><th>IP</th></tr>
-		{% for ip in ips %}
-		<tr><td>{{ ip }}</td></tr>
-		{% endfor %}
-	</table>
+
+    <h2>Emails</h2>
+    <table>
+        <tr><th>Email</th></tr>
+        {% for email in emails %}
+        <tr><td>{{ email }}</td></tr>
+        {% endfor %}
+    </table>
+
+    <h2>IPs</h2>
+    <table>
+        <tr><th>IP</th></tr>
+        {% for ip in ips %}
+        <tr><td>{{ ip }}</td></tr>
+        {% endfor %}
+    </table>
+
     <h2>Pastebin Connections</h2>
     <table>
         <tr>
             <th>Paste URL</th>
-            <th>Linked Domain</th>
+            <th>Extracted Domains</th>
+            <th>Linked Domains</th>
         </tr>
-        {% for url, domain in paste_connections %}
+        {% for paste in paste_connections %}
         <tr>
-            <td>{{ url }}</td>
-            <td>{{ domain }}</td>
+            <td>{{ paste.url }}</td>
+            <td>{{ ', '.join(paste.extracted_domains) if paste.extracted_domains else 'N/A' }}</td>
+            <td>{{ ', '.join(paste.linked_domains) if paste.linked_domains else 'N/A' }}</td>
         </tr>
         {% endfor %}
     </table>
