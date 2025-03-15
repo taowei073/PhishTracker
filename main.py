@@ -3,7 +3,10 @@ import argparse
 import sys, os
 
 # Corrected imports to match the actual project structure
-from src.data_collection import twitter_collector, whois_collector, pastebin_collector
+# from src.data_collection import whois_collector, pastebin_collector
+from src.data_collection.twitter_collector import TwitterCollector
+from src.data_collection.whois_collector import WhoisCollector
+from src.data_collection.pastebin_collector import PastebinCollector
 from src.nlp import nlp_processor, processor_deduplicate
 from src.correlation import neo4j_loader
 from src.dashboard import dashboard as flask_app
@@ -13,9 +16,15 @@ def run_data_collection():
     """Start data collection from different sources."""
     print("Starting data collection...")
     try:
-        twitter_collector.collect_tweets()  # Fetch phishing-related tweets
-        whois_collector.fetch_domains()  # Fetch WHOIS information
-        pastebin_collector.collect_pastes()  # Scrape Pastebin for phishing data
+        # twitter_collector.collect_tweets()  # Fetch phishing-related tweets
+        collector = TwitterCollector()
+        collector.collect_tweets()
+        # whois_collector.fetch_whois()  # Fetch WHOIS information
+        collector = WhoisCollector()
+        collector.run()
+        # pastebin_collector.collect_pastes()  # Scrape Pastebin for phishing data
+        collector = PastebinCollector(link_limit=10)
+        collector.run()
     except Exception as e:
         print(f"Error during data collection: {e}")
         sys.exit(1)

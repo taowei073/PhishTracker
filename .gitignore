@@ -1,3 +1,6 @@
 # Ignore processed data files
 src/nlp/processed_data.json
 src/nlp/processed_data_deduped.json
+src/data_collection/whois_data.json
+src/data_collection/pastebin_data.json
+src/data_collection/twitter_usage.json
