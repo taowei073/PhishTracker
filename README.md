@@ -37,14 +37,14 @@ PhishTracker is a **cyber threat intelligence framework** designed for **OSINT-b
 - **pip (Python Package Manager)**
 
 ### **🔹 1️⃣ Clone the Repository**
-git clone https://github.com/taowei073/PhishTracker.git
+git clone https://github.com/taowei073/PhishTracker.git \
 cd PhishTracker
 
 ### **🔹 2️⃣ Install Dependencies**
 pip install -r requirements.txt
 
 ### **🔹 3️⃣ Configure Neo4j**
-Start Neo4j and create a database called PhishTrackerDB.\
+Start Neo4j and create a database called **PhishTrackerDB**.\
 Set username/password in src/correlation/neo4j_loader.py:\
 URI = "bolt://localhost:7687"\
 USERNAME = "neo4j"\
