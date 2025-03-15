@@ -16,8 +16,8 @@ PhishTracker is a **cyber threat intelligence framework** designed for **OSINT-b
   - Suspicious Keywords (e.g., "login", "password", "urgent")
 
 ✔️ **Threat Intelligence Correlation** – Uses **Neo4j** to:
-  - **Link phishing domains to IPs & Pastebin leaks**
-  - **Identify relationships between different phishing campaigns**
+  - Link phishing domains to IPs & Pastebin leaks
+  - Identify relationships between different phishing campaigns
 
 ✔️ **Interactive Dashboard** – A **Flask-based web UI** for threat visualization.
 
@@ -37,7 +37,6 @@ PhishTracker is a **cyber threat intelligence framework** designed for **OSINT-b
 - **pip (Python Package Manager)**
 
 ### **🔹 1️⃣ Clone the Repository**
-```bash
 git clone https://github.com/taowei073/PhishTracker.git
 cd PhishTracker
 

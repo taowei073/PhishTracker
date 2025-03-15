@@ -181,11 +181,13 @@ class Neo4jLoader:
             print(f"Error loading data: {e}")
         print("Neo4j load complete.")
 
-def main():
+
+def load_data():
     loader = Neo4jLoader(URI, USERNAME, PASSWORD)
     loader.clear_database()  # Reset to ensure clean slate
     loader.load_data()
     loader.close()
 
+
 if __name__ == "__main__":
-    main()
+    load_data()

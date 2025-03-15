@@ -1,42 +1,55 @@
 #!/usr/bin/env python
 import argparse
-import sys
+import sys, os
 
-# Import your project modules (ensure these modules exist in your src folder)
-# For example, if your project has modules for data collection, NLP processing, and dashboard launching:
-from src.data_collection import twitter_scraper, whois_lookup, pastebin_scraper
-from src.nlp import nlp_pipeline
-from src.correlation import neo4j_integration, risk_scoring
-from src.dashboard import app as flask_app
+# Corrected imports to match the actual project structure
+from src.data_collection import twitter_collector, whois_collector, pastebin_collector
+from src.nlp import nlp_processor, processor_deduplicate
+from src.correlation import neo4j_loader
+from src.dashboard import dashboard as flask_app
 
 
 def run_data_collection():
+    """Start data collection from different sources."""
     print("Starting data collection...")
     try:
-        twitter_scraper.collect_tweets()  # Replace with your actual function call
-        whois_lookup.fetch_domains()  # Replace with your actual function call
-        pastebin_scraper.collect_pastes()  # Replace with your actual function call
+        twitter_collector.collect_tweets()  # Fetch phishing-related tweets
+        whois_collector.fetch_domains()  # Fetch WHOIS information
+        pastebin_collector.collect_pastes()  # Scrape Pastebin for phishing data
     except Exception as e:
         print(f"Error during data collection: {e}")
         sys.exit(1)
 
 
 def run_data_processing():
+    """Process collected data using NLP and store relationships in Neo4j."""
     print("Processing data with NLP and correlation...")
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    PROCESSED_DATA_PATH = os.path.join(SCRIPT_DIR, "src", "nlp", "processed_data.json")
     try:
-        nlp_pipeline.run_pipeline()  # Replace with your actual function call
-        neo4j_integration.update_graph()  # Replace with your actual function call
-        risk_scoring.compute_scores()  # Replace with your actual function call
+        # Step 1: Run NLP processing
+        nlp_processor.main()
+
+        # Step 2: Deduplicate processed data
+        processor_deduplicate.remove_duplicates()
+
+        # Step 3: Load data into Neo4j
+        if hasattr(neo4j_loader, 'load_data'):
+            neo4j_loader.load_data()
+        else:
+            print("Error: `load_data()` not found in neo4j_loader.py")
+            sys.exit(1)
+
     except Exception as e:
         print(f"Error during data processing: {e}")
         sys.exit(1)
 
 
 def launch_dashboard():
+    """Launch the Flask-based web dashboard."""
     print("Launching Flask dashboard...")
     try:
-        # Launch the Flask app (modify host/port as needed)
-        flask_app.run(host='0.0.0.0', port=5000, debug=True)
+        flask_app.app.run(host='0.0.0.0', port=5000, debug=True)
     except Exception as e:
         print(f"Error launching dashboard: {e}")
         sys.exit(1)

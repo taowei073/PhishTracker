@@ -161,7 +161,7 @@ def process_pastebin(line):
                 # For now, this is a placeholder—implement a real lookup or correlation
                 for ip in entities["ips"]:
                     # Hypothetical: Check if IP matches any WHOIS record (you’d need to store or query WHOIS data)
-                    if ip == "87.106.162.209":  # Example IP from Pastebin
+                    if ip == "87.106.162.209":  # Example IP from Pastebin, need to remove the hardcoded ip !!!!!
                         linked_domains.extend(["suspicious.site", "secure-update.org"])  # Example linkage
             return {
                 "source": "pastebin",
@@ -215,6 +215,7 @@ def main():
             print(f"Error processing {input_file}: {e}")
 
     print(f"Processing complete. Total items processed: {processed_count}")
+
 
 if __name__ == "__main__":
     main()
