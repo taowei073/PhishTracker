@@ -33,8 +33,8 @@ PhishTracker is a **cyber threat intelligence framework** designed for **OSINT-b
 ### **🔹 Prerequisites**
 - **Python 3.8+**
 - **Neo4j Database (Community/Enterprise)**
-- **Git**
 - **pip (Python Package Manager)**
+- **Add env var TWITTER_BEARER_TOKEN and set the value to your twitter token**
 
 ### **🔹 1️⃣ Clone the Repository**
 git clone https://github.com/taowei073/PhishTracker.git \
