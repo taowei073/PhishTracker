@@ -44,10 +44,10 @@ cd PhishTracker
 pip install -r requirements.txt
 
 ### **🔹 3️⃣ Configure Neo4j**
-Start Neo4j and create a database called PhishTrackerDB.
-Set username/password in src/correlation/neo4j_loader.py:
-URI = "bolt://localhost:7687"
-USERNAME = "neo4j"
+Start Neo4j and create a database called PhishTrackerDB.\
+Set username/password in src/correlation/neo4j_loader.py:\
+URI = "bolt://localhost:7687"\
+USERNAME = "neo4j"\
 PASSWORD = "test1234"
 
 ### **🔹 4️⃣ Run the Data Collection**
@@ -57,11 +57,11 @@ python main.py --collect
 python main.py --process
 
 ### **🔹 6️⃣ Start the Flask Dashboard**
-python main.py --dashboard
+python main.py --dashboard \
 Access UI at: http://127.0.0.1:5000
 
 ### **🔍 Example Queries (Neo4j)**
-Run these in Neo4j Browser:
+Run these in Neo4j Browser:\
 ✅ Find all phishing-related domains
 MATCH (d:Domain) RETURN d.name LIMIT 10;
 
